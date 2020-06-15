@@ -1,0 +1,100 @@
+#Code:
+
+from random import randint
+
+class Blackjack():
+    def __init__(self):
+        self.deck = []
+        self.suits = ['Spades', 'Hearts', 'Diamonds', 'Clubs']
+        self.values = [2,3,4,5,6,7,8,9,10,'J','Q','K','A']
+        
+    def makeDeck(self):
+        for suit in self.suits:
+            for value in self.values:
+                self.deck.append((value,suit))
+    
+    def pullCard(self):
+        return self.deck.pop(randint(0,len(self.deck)-1))
+
+class Player:
+    def __init__(self,name):
+        self.hand = []
+        self.name = name
+    
+    def addCard(self,card):
+        self.hand.append(card)
+        
+    def showHand(self, game_start = True):
+        for i in range(len(self.hand)):
+                if self.name == 'Dealer' and game_start == True and i == 0:
+                    print('- of -')
+                else:
+                    card = self.hand[i]
+                    print('{} of {}'.format(card[0],card[1]))
+            
+    def calcHand(self, game_start = True):
+        total = 0
+        aces = 0
+        card_value = {1:1,2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10,'J':10,'Q':10,'K':10,'A':11} 
+        for i in range(len(self.hand)):
+            if self.name == 'Dealer' and game_start:
+                return card_value[self.hand[1][0]]
+            elif self.hand == 'A':
+                aces +=1
+            else:
+                total += card_value[self.hand[i][0]]
+        for i in range(aces):
+            if total + 11 > 21:
+                total += 1
+            else: total += 11
+        return total
+
+#Game:
+
+game = Blackjack()
+game.makeDeck()
+name = input("Whats your name?")
+player = Player(name)
+dealer = Player("Dealer")
+for i in range(2):
+    player.addCard(game.pullCard())
+    dealer.addCard(game.pullCard())
+print("\nPlayer hand:\n")
+player.showHand()
+print("\nDealer hand:\n")
+dealer.showHand()
+
+player_busted = False
+while (input('\n\nDo you want to stay of hit?')).lower() != 'stay':
+    player.addCard(game.pullCard())     # players hits. He gets a card
+    player.showHand()
+    print(player.calcHand())
+    if player.calcHand() > 21:
+        #print('You are busted!')
+        player_busted = True
+        break
+
+if player_busted == False:
+    dealer_busted = False
+    while dealer.calcHand(False) < 17:
+        dealer.addCard(game.pullCard())
+    if dealer.calcHand(False) > 21:
+        dealer_busted = True
+
+print("\nFinal hands\nPlayer hand:\n")
+player.showHand()
+print("\nDealer hand:\n")
+dealer.showHand(False)
+
+
+print("\n")
+if player_busted:
+    print('You are busted. You lose!')
+elif dealer_busted:
+    print('The dealer got busted. You win!')
+elif player.calcHand() < dealer.calcHand(False):
+    print('The dealer has higher cards. You lose!')
+elif player.calcHand() > dealer.calcHand(False):
+    print('You beat the dealer. You win!')
+else:
+    print('You push - No one wins!')
